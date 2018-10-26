@@ -1,0 +1,10 @@
+---
+- name: "[XAVKI] - mysql"
+  hosts: mysql
+  roles:
+    - mysql
+   
+- name: "[XAVKI] - wordpress"
+  hosts: apache
+  roles:
+    - wordpress

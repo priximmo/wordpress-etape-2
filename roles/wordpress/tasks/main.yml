@@ -1,0 +1,72 @@
+---
+
+- name: "[WORDPRESS] - update cache"
+  apt:
+    update_cache: yes
+
+- name: "[WORDPRESS] - install apache/php" 
+  apt: 
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ wordpress_packages }}"
+
+- name: "[WORDPRESS] - start apache"
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - apache2
+
+- name: "[WORDPRESS] - delete html directory"
+  file:
+    path: "/var/www/html"
+    state: absent
+
+- name: "[WORDPRESS] - delete html directory"
+  file:
+    src: "/srv/html"
+    dest: "/var/www/html"
+    state: link
+
+- name: "[WORDPRESS] - if exist"
+  stat:
+    path: "/var/www/html/wordpress/"
+  register: check_wordpress
+
+- name: "[WORDPRESS] - download tar.gz"
+  unarchive:
+    src: "{{ wordpress_source }}"
+    dest: "/var/www/html/"
+    remote_src: yes
+  when: check_wordpress.stat.exists == False 
+  run_once: yes
+
+- name: "[WORDPRESS] - check if exist"
+  stat:
+    path: "/var/www/html/wordpress/wp-config-sample.php"
+  register: check_sample
+
+- name: "[INSTALL WORDPRESS] - rename wp-config-sample.php"
+  command: mv /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
+  when: check_sample.stat.exists == True
+
+- name: "[INSTALL WORDPRESS] - modify wp-config.php"
+  lineinfile:
+    dest: "/var/www/html/wordpress/wp-config.php"
+    regexp: "{{ item.search }}"
+    line: "{{ item.new }}"
+    backrefs: yes
+  with_items:
+    - {'search': '^(.*)database_name_here(.*)$', 'new': '\1{{ mysql_db }}\2'}
+    - {'search': '^(.*)username_here(.*)$', 'new': '\1{{ mysql_user }}\2'}
+    - {'search': '^(.*)password_here(.*)$', 'new': '\1{{ mysql_password }}\2'}
+    - {'search': '^(.*)localhost(.*)$', 'new': '\1{{ mysql_host }}\2'}
+
+
+
+
+
+
+
+

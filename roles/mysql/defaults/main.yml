@@ -1,0 +1,9 @@
+---
+
+mysql_packages:
+  - mysql-server
+  - python-mysqldb
+mysql_db: "wordpress"
+mysql_user: "user1"
+mysql_password: "password"
+

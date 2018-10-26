@@ -1,0 +1,10 @@
+---
+
+wordpress_packages:
+    - apache2
+    - php7.0-common
+    - php7.0-mysql
+    - libapache2-mod-php7.0
+    - wget
+
+wordpress_source: "https://wordpress.org/latest.tar.gz"
