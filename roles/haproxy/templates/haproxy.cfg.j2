@@ -1,0 +1,52 @@
+global
+    log         /dev/log        local0
+    log         /dev/log        local1 notice
+    #chroot      /var/lib/haproxy
+    #stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+    user        haproxy
+    group       haproxy
+    daemon
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will 
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode        http
+    log         global
+    option      dontlognull
+    option      httplog
+    timeout connect 5000 # default 10 second time out if a backend is not found
+    timeout client 50000
+    timeout server 50000
+    maxconn     6000
+    retries     3
+
+#---------------------------------------------------------------------
+# Listen webfarm
+#---------------------------------------------------------------------
+listen wordpress 
+       bind 0.0.0.0:80
+       default_backend wp_apache
+
+backend wp_apache
+       mode http
+       balance roundrobin
+       option httpchk
+       option forwardfor
+
+{% for host in groups['apache'] %}
+       server {{host }} {{ host }}:80 weight 1 maxconn 512 check
+{% endfor %}
+
+listen webstats
+       bind 0.0.0.0:8080
+       stats enable
+       stats hide-version
+       stats scope wordpress
+       stats scope wp_apache
+       stats uri /
+       stats realm Haproxy\ Statistics
+       stats auth haproxy:password
+       stats refresh 10s

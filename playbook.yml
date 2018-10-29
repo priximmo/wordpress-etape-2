@@ -8,3 +8,8 @@
   hosts: apache
   roles:
     - wordpress
+
+- name: "[XAVKI] - haproxy"
+  hosts: haproxy
+  roles:
+    - haproxy

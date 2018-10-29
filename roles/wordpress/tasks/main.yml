@@ -42,6 +42,13 @@
   when: check_wordpress.stat.exists == False 
   run_once: yes
 
+- name: "[WORDPRESS] - change vhost"
+  lineinfile:
+    dest: "/etc/apache2/sites-available/000-default.conf"
+    regexp: "\tDocumentRoot /var/www/html"
+    line: "\tDocumentRoot /var/www/html/wordpress"
+  notify: restart apache
+
 - name: "[WORDPRESS] - check if exist"
   stat:
     path: "/var/www/html/wordpress/wp-config-sample.php"
@@ -63,6 +70,8 @@
     - {'search': '^(.*)password_here(.*)$', 'new': '\1{{ mysql_password }}\2'}
     - {'search': '^(.*)localhost(.*)$', 'new': '\1{{ mysql_host }}\2'}
 
+- name: "[INSTALL WORDPRESS] - modify wp-config.php"
+  command: sed -i "s/, ' /, '/g" /var/www/html/wordpress/wp-config.php
 
 
 
